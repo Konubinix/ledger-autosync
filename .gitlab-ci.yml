@@ -1,0 +1,8 @@
+before_script:
+ - apt-get update
+ - apt-get install ledger
+ - apt-get install hledger
+ - pip install -r requirements.txt
+nose:
+  script:
+    - nosetests -a generic -a ledger -a hledger
