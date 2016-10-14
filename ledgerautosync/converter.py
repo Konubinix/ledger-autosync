@@ -22,6 +22,7 @@ from decimal import Decimal
 import re
 from ofxparse.ofxparse import Transaction as OfxTransaction, InvestmentTransaction
 from ledgerautosync import EmptyInstitutionException
+import os
 import datetime
 import hashlib
 
@@ -252,6 +253,18 @@ class Converter(object):
         if self.lgr is None:
             return self.unknownaccount or 'Expenses:Misc'
         else:
+            from xdg import BaseDirectory
+            import importlib
+            for ledgerautosync_hooks in BaseDirectory.load_config_paths("ledgerautosync/hooks.py"):
+                import sys
+                sys.path.append(os.path.dirname(ledgerautosync_hooks))
+                mod = importlib.import_module(
+                    os.path.splitext(os.path.basename(ledgerautosync_hooks))[0]
+                )
+                if hasattr(mod, "mk_dynamic_account"):
+                    res = mod.mk_dynamic_account(payee, exclude)
+                    if res is not None:
+                        return res
             account = self.lgr.get_account_by_payee(payee, exclude)
             if account is None:
                 return self.unknownaccount or 'Expenses:Misc'
