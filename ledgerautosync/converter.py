@@ -249,7 +249,7 @@ class Converter(object):
             self.currency = "$"
         self.date_format = date_format
 
-    def mk_dynamic_account(self, payee, exclude):
+    def mk_dynamic_account(self, payee, exclude, amount):
         if self.lgr is None:
             return self.unknownaccount or 'Expenses:Misc'
         else:
@@ -262,7 +262,7 @@ class Converter(object):
                     os.path.splitext(os.path.basename(ledgerautosync_hooks))[0]
                 )
                 if hasattr(mod, "mk_dynamic_account"):
-                    res = mod.mk_dynamic_account(payee, exclude)
+                    res = mod.mk_dynamic_account(payee, exclude, amount)
                     if res is not None:
                         return res
             account = self.lgr.get_account_by_payee(payee, exclude)
@@ -451,7 +451,8 @@ class OfxConverter(Converter):
                     posting,
                     posting.clone_inverted(
                         self.mk_dynamic_account(self.format_payee(txn),
-                                                exclude=self.name))],
+                                                exclude=self.name,
+                                                amount=txn.amount))],
                 date_format=self.date_format,)
         elif isinstance(txn, InvestmentTransaction):
             acct1 = self.name
